@@ -166,7 +166,7 @@ curl -s http://localhost:9113/metrics | grep -E '^nginx_up|^nginx_connections_ac
 Test from the **monitoring VM**:
 
 ```bash
-curl -s http://frontend.daws90s.shop:9113/metrics | grep nginx_up
+curl -s http://frontend.vosukula.shop:9113/metrics | grep nginx_up
 ```
 
 If `curl` hangs, it's the security group or VPC (the monitoring VM must be in the same VPC). If it says `connection refused`, the port is reachable but the exporter isn't running.

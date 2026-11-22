@@ -1,6 +1,6 @@
 # Blackbox Exporter — Manual Install on the Monitoring VM
 
-**Lab:** Expense app (ALB → frontend → backend → MySQL) — domain `daws90s.shop`, app URL `https://expense.daws90s.shop`
+**Lab:** Expense app (ALB → frontend → backend → MySQL) — domain `vosukula.shop`, app URL `https://expense.vosukula.shop`
 **Where:** the **monitoring VM** (same VM as Prometheus, inside the expense VPC)
 **Layout convention:** binary in `/opt/blackbox_exporter-<version>` + symlink `/opt/blackbox_exporter`, config in `/etc/blackbox_exporter/`
 
@@ -10,8 +10,8 @@
 
 | Check | Module | Target | Proves |
 |---|---|---|---|
-| App is up over HTTPS, cert valid | `https_2xx` | `https://expense.daws90s.shop` | Users can load the app; cert valid & matches hostname |
-| HTTP redirects to HTTPS | `http_redirects_to_https` | `http://expense.daws90s.shop` | No plain-HTTP serving |
+| App is up over HTTPS, cert valid | `https_2xx` | `https://expense.vosukula.shop` | Users can load the app; cert valid & matches hostname |
+| HTTP redirects to HTTPS | `http_redirects_to_https` | `http://expense.vosukula.shop` | No plain-HTTP serving |
 | DNS from users' view | `dns_expense_a` | `8.8.8.8` | Public can resolve the app |
 | DNS from app VMs' view | `dns_*_a` | `169.254.169.253` (Amazon VPC DNS) | VMs can resolve their dependencies |
 | Zone serial | `dns_soa` | Route 53 authoritative NS | Detects zone changes |
@@ -22,7 +22,7 @@
 
 **Prerequisites**
 - Prometheus already running on this VM at `/opt/prometheus` with `--web.enable-lifecycle`
-- ALB has a 443 listener with an ACM cert covering `expense.daws90s.shop`
+- ALB has a 443 listener with an ACM cert covering `expense.vosukula.shop`
 
 ---
 
@@ -127,7 +127,7 @@ modules:
     timeout: 5s
     dns:
       preferred_ip_protocol: ip4
-      query_name: expense.daws90s.shop
+      query_name: expense.vosukula.shop
       query_type: A
       valid_rcodes: [NOERROR]
       validate_answer_rrs:
@@ -138,7 +138,7 @@ modules:
     timeout: 5s
     dns:
       preferred_ip_protocol: ip4
-      query_name: frontend.daws90s.shop
+      query_name: frontend.vosukula.shop
       query_type: A
       valid_rcodes: [NOERROR]
       validate_answer_rrs:
@@ -149,7 +149,7 @@ modules:
     timeout: 5s
     dns:
       preferred_ip_protocol: ip4
-      query_name: backend.daws90s.shop
+      query_name: backend.vosukula.shop
       query_type: A
       valid_rcodes: [NOERROR]
       validate_answer_rrs:
@@ -160,7 +160,7 @@ modules:
     timeout: 5s
     dns:
       preferred_ip_protocol: ip4
-      query_name: mysql.daws90s.shop
+      query_name: mysql.vosukula.shop
       query_type: A
       valid_rcodes: [NOERROR]
       validate_answer_rrs:
@@ -196,37 +196,37 @@ scrape_configs:
   # ================= White-box: hosts =================
   - job_name: node
     static_configs:
-      - targets: [frontend.daws90s.shop:9100]
+      - targets: [frontend.vosukula.shop:9100]
         labels: { tier: frontend }
-      - targets: [backend.daws90s.shop:9100]
+      - targets: [backend.vosukula.shop:9100]
         labels: { tier: backend }
-      - targets: [mysql.daws90s.shop:9100]
+      - targets: [mysql.vosukula.shop:9100]
         labels: { tier: mysql }
 
   # ================= White-box: services =================
   - job_name: nginx
     static_configs:
-      - targets: [frontend.daws90s.shop:9113]
+      - targets: [frontend.vosukula.shop:9113]
         labels: { tier: frontend }
 
   - job_name: backend
     metrics_path: /metrics
     static_configs:
-      - targets: [backend.daws90s.shop:9101]
+      - targets: [backend.vosukula.shop:9101]
         labels: { tier: backend }
 
   - job_name: mysql
     static_configs:
-      - targets: [mysql.daws90s.shop:9104]
+      - targets: [mysql.vosukula.shop:9104]
         labels: { tier: mysql }
 
   # ================= Black-box: HTTPS + cert + redirect =================
   - job_name: blackbox_http
     metrics_path: /probe
     static_configs:
-      - targets: [https://expense.daws90s.shop]
+      - targets: [https://expense.vosukula.shop]
         labels: { probe: alb, module: https_2xx }
-      - targets: [http://expense.daws90s.shop]
+      - targets: [http://expense.vosukula.shop]
         labels: { probe: alb_redirect, module: http_redirects_to_https }
     relabel_configs:
       - source_labels: [__address__]       # (1) website -> ?target=
@@ -244,16 +244,16 @@ scrape_configs:
     static_configs:
       # Public resolver — what users see
       - targets: [8.8.8.8]
-        labels: { resolver: public, module: dns_expense_a, record: expense.daws90s.shop }
+        labels: { resolver: public, module: dns_expense_a, record: expense.vosukula.shop }
       # Amazon VPC resolver — what the app VMs see
       - targets: [169.254.169.253]
-        labels: { resolver: vpc, module: dns_expense_a, record: expense.daws90s.shop }
+        labels: { resolver: vpc, module: dns_expense_a, record: expense.vosukula.shop }
       - targets: [169.254.169.253]
-        labels: { resolver: vpc, module: dns_frontend_a, record: frontend.daws90s.shop }
+        labels: { resolver: vpc, module: dns_frontend_a, record: frontend.vosukula.shop }
       - targets: [169.254.169.253]
-        labels: { resolver: vpc, module: dns_backend_a, record: backend.daws90s.shop }
+        labels: { resolver: vpc, module: dns_backend_a, record: backend.vosukula.shop }
       - targets: [169.254.169.253]
-        labels: { resolver: vpc, module: dns_mysql_a, record: mysql.daws90s.shop }
+        labels: { resolver: vpc, module: dns_mysql_a, record: mysql.vosukula.shop }
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -274,7 +274,7 @@ EOF
 ## 7. Fill in the Route 53 name server, validate, reload
 
 ```bash
-NS=$(dig NS daws90s.shop +short | head -1 | sed 's/\.$//')
+NS=$(dig NS vosukula.shop +short | head -1 | sed 's/\.$//')
 echo "Authoritative NS: $NS"
 sudo sed -i "s/AUTH_NS_PLACEHOLDER/${NS}/" /etc/prometheus/prometheus.yml
 
@@ -291,11 +291,11 @@ Later changes to `prometheus.yml`: edit → `promtool check config` → `curl -X
 
 ```bash
 # HTTPS + cert
-curl -s 'localhost:9115/probe?target=https://expense.daws90s.shop&module=https_2xx' \
+curl -s 'localhost:9115/probe?target=https://expense.vosukula.shop&module=https_2xx' \
   | grep -E '^probe_(success|http_status_code|ssl_earliest_cert_expiry|tls_version_info)'
 
 # HTTP -> HTTPS redirect
-curl -s 'localhost:9115/probe?target=http://expense.daws90s.shop&module=http_redirects_to_https' | grep '^probe_success'
+curl -s 'localhost:9115/probe?target=http://expense.vosukula.shop&module=http_redirects_to_https' | grep '^probe_success'
 
 # DNS via VPC resolver / public resolver
 curl -s 'localhost:9115/probe?target=169.254.169.253&module=dns_backend_a' | grep -E '^probe_(success|dns_lookup)'
@@ -341,17 +341,17 @@ prometheus.yml   = WHAT to check  (targets) + WHEN (every 15s)
 relabel_configs  = build the URL  localhost:9115/probe?target=<what>&module=<how>
 ```
 
-Label walk-through for `https://expense.daws90s.shop`:
+Label walk-through for `https://expense.vosukula.shop`:
 
 | Step | Label set | Effect on scrape URL |
 |---|---|---|
-| start | `__address__=https://expense.daws90s.shop`, `module=https_2xx` | would hit the website — wrong |
-| (1) | `__param_target=https://expense.daws90s.shop` | adds `?target=...` |
+| start | `__address__=https://expense.vosukula.shop`, `module=https_2xx` | would hit the website — wrong |
+| (1) | `__param_target=https://expense.vosukula.shop` | adds `?target=...` |
 | (2) | `__param_module=https_2xx` | adds `&module=https_2xx` |
-| (3) | `instance=https://expense.daws90s.shop` | readable results (not `localhost:9115`) |
+| (3) | `instance=https://expense.vosukula.shop` | readable results (not `localhost:9115`) |
 | (4) | `__address__=localhost:9115` | connect to the exporter |
 
-Final call: `http://localhost:9115/probe?target=https://expense.daws90s.shop&module=https_2xx`
+Final call: `http://localhost:9115/probe?target=https://expense.vosukula.shop&module=https_2xx`
 Rule (1) **must** run before (4), otherwise the exporter probes itself.
 
 **DNS is the exception:** target = the *DNS server to ask*; the record name lives in the module's `query_name`.
@@ -367,7 +367,7 @@ Other AWS link-local IPs: `.169.254` = instance metadata, `.169.123` = time sync
 | Drill | Do | Expect |
 |---|---|---|
 | Frontend down | `sudo systemctl stop nginx` on frontend VM | ALB returns 503 → `probe_success{probe="alb"}=0`, `probe_http_status_code=503`, but `up{job="node",tier="frontend"}=1` — **only black-box sees the user impact** |
-| Hostname mismatch | Probe `https://<alb-name>.elb.amazonaws.com` with `https_2xx` | `probe_success=0` — cert is for `expense.daws90s.shop`, not the ELB name |
+| Hostname mismatch | Probe `https://<alb-name>.elb.amazonaws.com` with `https_2xx` | `probe_success=0` — cert is for `expense.vosukula.shop`, not the ELB name |
 | DNS record gone | Delete/rename `backend` record in Route 53 | `probe_success{module="dns_backend_a"}=0` (NXDOMAIN); backend VM still `up=1` |
 | Zone change | Edit any record | `probe_dns_serial` increases on the authoritative probe |
 
@@ -383,7 +383,7 @@ Restore after each and watch recovery.
 |---|---|
 | `Exec format error` | Downloaded darwin/wrong-arch tarball — use `linux-amd64` / `linux-arm64` |
 | `alb_redirect` fails | ALB port-80 listener isn't a redirect to HTTPS — change listener or drop that target |
-| `https_2xx` fails but browser works | Run with `&debug=true`; usually cert doesn't cover `expense.daws90s.shop` |
+| `https_2xx` fails but browser works | Run with `&debug=true`; usually cert doesn't cover `expense.vosukula.shop` |
 | VPC DNS probes fail | Monitoring VM not in expense VPC, or VPC "DNS resolution" disabled |
 | Prometheus reload fails | `promtool check config` — usually YAML indentation |
 | Target shows `AUTH_NS_PLACEHOLDER` | Step 7 `sed` not run, or `dig` returned nothing |

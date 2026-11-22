@@ -172,7 +172,7 @@ curl -s http://localhost:9104/metrics | grep -E '^mysql_up|^mysql_global_status_
 Test from the **monitoring VM**:
 
 ```bash
-curl -s http://mysql.daws90s.shop:9104/metrics | grep mysql_up
+curl -s http://mysql.vosukula.shop:9104/metrics | grep mysql_up
 ```
 
 If `curl` hangs, it's the security group or VPC (the monitoring VM must be in the same VPC). If it says `connection refused`, the port is reachable but the exporter isn't running.

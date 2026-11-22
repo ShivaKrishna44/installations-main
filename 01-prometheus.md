@@ -51,9 +51,10 @@ Source: https://prometheus.io/download/#prometheus (file `prometheus-<version>.l
 
 ```bash
 cd /opt
-VERSION=3.16.0
+VERSION="2.53.3"
 curl -fLO https://github.com/prometheus/prometheus/releases/download/v${VERSION}/prometheus-${VERSION}.linux-amd64.tar.gz
 tar -xzf prometheus-${VERSION}.linux-amd64.tar.gz
+
 ```
 
 Make sure the file name says `linux-amd64`. A `darwin` file is the macOS build and fails with `Exec format error`.
@@ -75,6 +76,7 @@ The folder holds `prometheus` (the server), `promtool` (config checker) and a sa
 ```bash
 id prometheus || useradd --system --no-create-home --shell /sbin/nologin prometheus
 mkdir -p /etc/prometheus /var/lib/prometheus
+chmod 777 prometheus
 cp /opt/prometheus/prometheus.yml /etc/prometheus/prometheus.yml
 chown -R prometheus:prometheus /opt/prometheus-${VERSION} /etc/prometheus /var/lib/prometheus
 ```

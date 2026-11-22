@@ -135,9 +135,9 @@ curl -s http://localhost:9100/metrics | grep -E '^node_load1|^node_uname_info'
 Test from the **monitoring VM**:
 
 ```bash
-curl -s http://frontend.daws90s.shop:9100/metrics | head -5
-curl -s http://backend.daws90s.shop:9100/metrics | head -5
-curl -s http://mysql.daws90s.shop:9100/metrics | head -5
+curl -s http://frontend.vosukula.shop:9100/metrics | head -5
+curl -s http://backend.vosukula.shop:9100/metrics | head -5
+curl -s http://mysql.vosukula.shop:9100/metrics | head -5
 ```
 
 If `curl` hangs, it's the security group or VPC (the monitoring VM must be in the same VPC). If it says `connection refused`, the port is reachable but the exporter isn't running.

@@ -97,8 +97,11 @@ ln -sfn /opt/mysqld_exporter-${VERSION} /opt/mysqld_exporter
 ### 2.4 System user
 
 ```bash
-id mysqld_exporter || useradd --system --no-create-home --shell /sbin/nologin mysqld_exporter
-chown -R mysqld_exporter:mysqld_exporter /opt/mysqld_exporter-${VERSION}
+useradd --system --no-create-home --shell /sbin/nologin mysqld_exporter
+chown -R mysqld_exporter:mysqld_exporter /etc/mysqld_exporter
+chmod 600 /etc/mysqld_exporter/.my.cnf
+ls -la /etc/mysqld_exporter/
+
 ```
 
 ### 2.5 Credentials file
@@ -112,9 +115,9 @@ password=Exp0rter@123
 host=127.0.0.1
 port=3306
 CNF
-chown mysqld_exporter:mysqld_exporter /etc/mysqld_exporter/.my.cnf
+chown -R mysqld_exporter:mysqld_exporter /etc/mysqld_exporter
 chmod 600 /etc/mysqld_exporter/.my.cnf
-ls -l /etc/mysqld_exporter/.my.cnf
+ls -la /etc/mysqld_exporter/
 ```
 
 Why `host=127.0.0.1` and not `localhost`: with `localhost`, the MySQL client tries the Unix socket, and the socket path often doesn't match. `127.0.0.1` forces TCP.
